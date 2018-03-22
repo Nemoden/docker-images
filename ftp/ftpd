@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+from pprint import pprint
+import argparse
+from os import environ, path, mkdir
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
+from sys import argv
+
+VERSION=(1, 0, 0)
+FTP_ROOT=environ.get('FTP_ROOT', '/ftp')
+DEFAULT_PERMISSIONS='elradfmwMT'
+
+class User(object):
+
+    def __init__(self, username, password, permissions=DEFAULT_PERMISSIONS):
+        self.username = username
+        self.password = password
+        self.permissions = permissions
+
+def ensure_dir(dir):
+    if not path.isdir(dir):
+        mkdir(dir)
+    return dir
+
+def make_server(host='0.0.0.0', port=21, allow_anonymous_user=False, is_passive=False, passive_ports=(3000, 3009), users=[], nat_address=None):
+    authorizer = DummyAuthorizer()
+
+    for user in users:
+        user_dir = path.join(FTP_ROOT, user.username)
+        authorizer.add_user(user.username, user.password, ensure_dir(user_dir), user.permissions)
+
+    if allow_anonymous_user:
+        nobody_dir = path.join(FTP_ROOT, 'nobody')
+        authorizer.add_anonymous(ensure_dir(nobody_dir))
+
+    handler = FTPHandler
+    handler.authorizer = authorizer
+    handler.permit_foreign_addresses = True
+
+    if is_passive:
+        if nat_address is not None:
+            handler.masquerade_address = nat_addresss
+        handler.passive_ports = range(passive_ports[0], passive_ports[1]+1)
+
+    return FTPServer((host, port), handler)
+
+# john:secret
+def main():
+    parser = argparse.ArgumentParser(
+        prog="ftpd",
+        usage="%(prog)s [options]",
+        description="Simple FTP server",
+        version=".".join(map(str, VERSION)),
+        add_help=False
+    )
+    parser.add_argument('--help', action='store_true', help="Show help message")
+    parser.add_argument('-h', '--host', default='0.0.0.0', help="Hostname to run FTP server")
+    parser.add_argument('-p', '--port', default=21, help="Port to run FTP server")
+    parser.add_argument('-P', '--passive-ports', help="A range of passive ports. Format: start-end. Example: 3000-3009. Passing this option will for FTP server to work in passive mode")
+    parser.add_argument('-u', '--user', action='append', help="Format: username:password:[permissions],...")
+    parser.add_argument('-a', '--anonymous', action='store_true', help="Allow anonymous user")
+    parser.add_argument('-n', '--nat', help="NAT address")
+    args = vars(parser.parse_args(argv[1:]))
+    if 'help' in args and args['help'] == True:
+        parser.print_help()
+        exit(0)
+
+    create_server_args = dict(
+        allow_anonymous_user = args['anonymous'],
+        port = args['port'],
+        is_passive = (args['passive_ports'] is not None),
+        nat_address = args['nat']
+    )
+    if args['passive_ports'] is not None:
+        ports = map(int, args['passive_ports'].split('-'))
+        create_server_args['passive_ports'] = (ports[0], ports[1])
+
+    users = []
+    if args['user'] is not None:
+        for user in args['user']:
+            userfields = list(user.split(':'))
+            if len(userfields) == 2:
+                userfields.append(DEFAULT_PERMISSIONS)
+            users.append(User(*userfields))
+
+    create_server_args['users'] = users
+
+    server = make_server(**create_server_args)
+    server.serve_forever()
+
+if __name__ == '__main__':
+    main()

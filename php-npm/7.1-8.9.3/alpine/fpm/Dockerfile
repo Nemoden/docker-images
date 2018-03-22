@@ -1,8 +1,8 @@
 FROM nemoden/php:7.1-fpm-alpine-dev
 
-# INSTALLATION OF NODE 8.9.3
+# INSTALLATION OF NODE 8.9.4
 # https://github.com/nodejs/docker-node/blob/6b8d86d6ad59e0d1e7a94cec2e909cad137a028f/8/alpine/Dockerfile
-ENV NODE_VERSION 8.9.3
+ENV NODE_VERSION 8.9.4
 
 RUN addgroup -g 1000 node \
     && adduser -u 1000 -G node -s /bin/sh -D node \
