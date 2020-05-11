@@ -13,7 +13,7 @@ RUN apk --update add build-base \
     libtool \
     autoconf \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install iconv mcrypt pdo pdo_mysql gd opcache \
+    && docker-php-ext-install mysqli iconv mcrypt pdo pdo_mysql gd opcache \
     && pecl install igbinary-2.0.5 \
     && docker-php-ext-enable igbinary \
     && echo yes | pecl install memcached-3.0.4 \
@@ -24,6 +24,6 @@ RUN apk --update add build-base \
 LABEL maintainer="Kirill Kovalchuk <i@nemoden.com>" \
   org.label-schema.docker.dockerfile="/Dockerfile" \
   org.label-schema.license="MIT" \
-  org.label-schema.name="php-fpm with pdo_mysql, redis, memcached, iconv, imagick, gd, igbinary, iconv and opcache" \
+  org.label-schema.name="php-fpm with mysqli, pdo_mysql, redis, memcached, iconv, imagick, gd, igbinary, iconv and opcache" \
   org.label-schema.vcs-type="Git" \
   org.label-schema.vcs-url="https://github.com/Nemoden/docker-images"

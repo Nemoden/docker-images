@@ -25,6 +25,6 @@ RUN apk --update add build-base \
 LABEL maintainer="Kirill Kovalchuk <i@nemoden.com>" \
   org.label-schema.docker.dockerfile="/Dockerfile" \
   org.label-schema.license="MIT" \
-  org.label-schema.name="php-fpm with pdo_mysql, redis, memcached, iconv, imagick, gd, igbinary, iconv and opcache" \
+  org.label-schema.name="php-fpm with mysqli, pdo_mysql, redis, memcached, iconv, imagick, gd, igbinary, iconv and opcache" \
   org.label-schema.vcs-type="Git" \
   org.label-schema.vcs-url="https://github.com/Nemoden/docker-images"
